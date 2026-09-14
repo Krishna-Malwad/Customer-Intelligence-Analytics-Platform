@@ -34,7 +34,14 @@ class Settings:
     )
 
     # CORS — restrict to your local React dev server by default
-    ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+    ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        "ALLOWED_ORIGINS",
+        "http://localhost:3000"
+    ).split(",")
+    if origin.strip()
+]
 
     # API behavior
     DB_QUERY_TIMEOUT_SECONDS = int(os.environ.get("DB_QUERY_TIMEOUT_SECONDS", 15))

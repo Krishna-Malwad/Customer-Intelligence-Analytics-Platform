@@ -23,6 +23,7 @@ DB_CONFIG = {
     "password": settings.DB_PASSWORD,
     "database": settings.DB_NAME,
     "autocommit": True,
+    "ssl_disabled": False,
 }
 
 

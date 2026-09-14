@@ -79,3 +79,8 @@ Dataset/*.csv
 # =========================
 BI_Exports/data/*.csv
 BI_Exports/*.csv
+
+# Local database migration files
+/customer_intelligence_backup.sql
+/customer_intelligence_production.sql
+/aiven_import_errors.txt

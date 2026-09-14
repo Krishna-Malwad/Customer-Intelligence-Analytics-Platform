@@ -1,0 +1,5 @@
+cluster,n_customers,avg_recency_days,avg_frequency,avg_monetary,total_monetary,segment_label
+0,27855,173.52,1.0,318.23,8864265.16,High-Value
+3,2801,220.29,2.11,308.53,864187.46,Loyal / Repeat
+2,27007,425.38,1.0,119.47,3226403.15,At-Risk / Dormant
+1,35695,147.78,1.0,69.05,2464917.98,Standard
