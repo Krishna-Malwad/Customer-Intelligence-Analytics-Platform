@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${CI_DB_PASSWORD}
+      MYSQL_DATABASE: ${CI_DB_NAME:-customer_intelligence}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./SQL:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    restart: unless-stopped
+    environment:
+      CI_DB_HOST: mysql
+      CI_DB_PORT: 3306
+      CI_DB_USER: root
+      CI_DB_PASSWORD: ${CI_DB_PASSWORD}
+      CI_DB_NAME: ${CI_DB_NAME:-customer_intelligence}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      ALLOWED_ORIGINS: http://localhost:3000
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    restart: unless-stopped
+    environment:
+      REACT_APP_API_URL: http://localhost:8000
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
+
+# NOTE: This compose file was written for correctness and reviewed
+# manually, but NOT build-tested — this sandbox environment does not
+# have a Docker daemon available. Please run `docker compose up --build`
+# yourself and report back if anything fails.
+#
+# Also note: SQL/ only contains schema.sql, staging_tables.sql, and
+# validation.sql, not the actual CSV data — the MySQL container will
+# start with an empty schema. You'll still need to run
+# Python/etl_pipeline.py once (pointed at this containerized MySQL) to
+# populate real data, exactly as you did locally.
