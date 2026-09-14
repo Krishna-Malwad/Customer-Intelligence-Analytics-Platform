@@ -6,7 +6,11 @@
 **Designed & Built by Krishna B M**
 
 🌐 **Live Application:** https://customer-intelligence-platform-7v7w.onrender.com
+
+
 🔗 **GitHub:** https://github.com/Krishna-Malwad/Customer-Intelligence-Analytics-Platform
+
+
 ⚙️ **API:** https://customer-intelligence-analytics-platform.onrender.com
 
 ---
