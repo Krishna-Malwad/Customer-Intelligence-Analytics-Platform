@@ -7,11 +7,17 @@ Run locally (from the backend/ directory):
     pip install -r requirements.txt
     uvicorn app.main:app --reload --port 8000
 
-Interactive docs: http://localhost:8000/docs
+Interactive docs (local development):
+    http://localhost:8000/docs
+
+Production:
+    Swagger/ReDoc/OpenAPI schema are disabled.
 """
 
 import logging
+import os
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -19,7 +25,12 @@ from app.core.config import settings
 from app.core.model_manager import model_manager
 from app.api.routes import health, customers, ml, analytics, genai, data_quality
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)-7s | %(name)s | %(message)s")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)-7s | %(name)s | %(message)s",
+)
+
 logger = logging.getLogger("main")
 
 
@@ -27,17 +38,31 @@ logger = logging.getLogger("main")
 async def lifespan(app: FastAPI):
     logger.info("Loading ML model artifacts...")
     model_manager.load_all()
-    logger.info("Startup complete. Model status: %s", model_manager.load_status)
+    logger.info(
+        "Startup complete. Model status: %s",
+        model_manager.load_status,
+    )
     yield
+
+
+# Render sets RENDER=true automatically.
+# Locally, documentation remains enabled for development.
+is_production = os.environ.get("RENDER") == "true"
 
 
 app = FastAPI(
     title="Customer Intelligence API",
-    description="Backend for the Olist Customer Intelligence Analytics Platform. "
-                 "Serves real database queries and pre-trained ML model predictions.",
+    description=(
+        "Backend for the Olist Customer Intelligence Analytics Platform. "
+        "Serves real database queries and pre-trained ML model predictions."
+    ),
     version="1.0.0",
     lifespan=lifespan,
+    docs_url=None if is_production else "/docs",
+    redoc_url=None if is_production else "/redoc",
+    openapi_url=None if is_production else "/openapi.json",
 )
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -50,7 +75,10 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return {"service": "Customer Intelligence API", "status": "running", "docs": "/docs"}
+    return {
+        "service": "Customer Intelligence API",
+        "status": "running",
+    }
 
 
 app.include_router(health.router)
