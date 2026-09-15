@@ -162,32 +162,18 @@ function Overview({ go }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    Promise.all([
-      api("/api/analytics/overview"),
-      api("/api/analytics/revenue-trend"),
-      api("/api/analytics/customers"),
-      api("/api/analytics/delivery"),
-      api("/api/analytics/satisfaction"),
-    ])
-      .then(
-        ([
-          overview,
-          revenue,
-          customerData,
-          deliveryData,
-          satisfaction,
-        ]) => {
-          setData(overview);
-          setTrend(revenue.trend || []);
-          setCustomers(customerData);
-          setDelivery(deliveryData);
-          setSat(satisfaction);
-        }
-      )
-      .catch((e) => {
-        setError(e.message);
-      });
-  }, []);
+  api("/api/analytics/overview-full")
+    .then((result) => {
+      setData(result.overview);
+      setTrend(result.revenue_trend || []);
+      setCustomers(result.customers);
+      setDelivery(result.delivery);
+      setSat(result.satisfaction);
+    })
+    .catch((e) => {
+      setError(e.message);
+    });
+}, []);
 
   if (error) {
     return (
