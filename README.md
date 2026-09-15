@@ -11,7 +11,7 @@
 🔗 **GitHub:** https://github.com/Krishna-Malwad/Customer-Intelligence-Analytics-Platform
 
 
-⚙️ **API:** https://customer-intelligence-analytics-platform.onrender.com
+⚙️ **Production API:** https://customer-intelligence-analytics-platform.onrender.com
 
 ---
 
@@ -19,7 +19,7 @@
 
 The **Customer Intelligence Analytics Platform** is a full-stack analytics and machine-learning application built using the **Olist Brazilian E-Commerce dataset**.
 
-The project takes the complete journey from raw transactional data to a deployed business intelligence platform:
+The project covers the complete journey from raw transactional data to a deployed business intelligence platform:
 
 **Raw Data → ETL → MySQL → Analytics → Machine Learning → GenAI → FastAPI → React → Cloud Deployment**
 
@@ -31,7 +31,7 @@ The platform is designed around practical business questions:
 * Which states have delivery problems?
 * Which product categories receive poor ratings?
 * What is the expected order value?
-* What products could be recommended to customers?
+* Which products could be recommended to customers?
 * Can business users ask questions using natural language?
 
 ---
@@ -40,7 +40,7 @@ The platform is designed around practical business questions:
 
 The project uses the **Olist Brazilian E-Commerce dataset**, containing approximately 100,000 real orders from 2016–2018.
 
-The data includes:
+The dataset contains information about:
 
 * Customers
 * Orders
@@ -52,7 +52,7 @@ The data includes:
 * Geolocation
 * Product-category translations
 
-The objective is not simply to analyze historical data, but to build a reusable analytics system that connects:
+The objective is not simply to analyze historical data, but to build a reusable analytics system connecting:
 
 **Business Intelligence + Customer Analytics + Machine Learning + Generative AI**
 
@@ -60,66 +60,76 @@ The objective is not simply to analyze historical data, but to build a reusable 
 
 ## Key Business Metrics
 
-The platform currently surfaces:
+| Metric                           |          Result |
+| -------------------------------- | --------------: |
+| Unique customers in full dataset |          96,096 |
+| Delivered revenue                | R$15,419,773.75 |
+| Average order value              |        R$159.83 |
+| Average delivery time            |      12.09 days |
+| Late-delivery rate               |           8.11% |
+| Average review score             |        4.09 / 5 |
+| Five-star review share           |          57.78% |
+| Repeat-purchase rate             |           3.12% |
 
-| Metric                 |          Result |
-| ---------------------- | --------------: |
-| Unique customers       |          96,096 |
-| Delivered revenue      | R$15,419,773.75 |
-| Average order value    |        R$159.83 |
-| Average delivery time  |      12.09 days |
-| Late-delivery rate     |           8.11% |
-| Average review score   |        4.09 / 5 |
-| Five-star review share |          57.78% |
-| Repeat-purchase rate   |           3.12% |
-
-These metrics are calculated from the project data pipeline and exposed through the backend analytics APIs.
+> **Note:** 93,358 customers are included in the RFM segmentation population used by the deployed analytics layer. The 96,096 figure represents the broader unique-customer population from the project analysis.
 
 ---
 
-## Architecture
+# Architecture
 
-```mermaid
-flowchart LR
-
-    A[Olist Raw CSV Dataset]
-    B[Python ETL]
-    C[(MySQL)]
-    D[Analytics APIs]
-    E[Machine Learning]
-    F[Gemini GenAI]
-    G[FastAPI]
-    H[React Frontend]
-    I[Cloud Deployment]
-
-    A --> B
-    B --> C
-
-    C --> D
-    C --> E
-    C --> F
-
-    D --> G
-    E --> G
-    F --> G
-
-    G --> H
-    H --> I
-    G --> I
+```text
+                    ┌──────────────────────┐
+                    │   Olist CSV Data     │
+                    └──────────┬───────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │   Python ETL / EDA   │
+                    └──────────┬───────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │     MySQL Database   │
+                    │     Aiven Cloud      │
+                    └──────────┬───────────┘
+                               │
+                 ┌─────────────┼─────────────┐
+                 │             │             │
+                 ▼             ▼             ▼
+          ┌────────────┐ ┌────────────┐ ┌────────────┐
+          │ Analytics  │ │ ML Models  │ │   GenAI    │
+          │   / SQL    │ │  Joblib    │ │   Gemini   │
+          └──────┬─────┘ └──────┬─────┘ └──────┬─────┘
+                 │              │              │
+                 └──────────────┼──────────────┘
+                                ▼
+                     ┌────────────────────┐
+                     │    FastAPI API     │
+                     └─────────┬──────────┘
+                               │
+                               ▼
+                     ┌────────────────────┐
+                     │   React Frontend   │
+                     └─────────┬──────────┘
+                               │
+                               ▼
+                     ┌────────────────────┐
+                     │  Render Deployment │
+                     └────────────────────┘
 ```
 
 ### Production architecture
 
 ```text
 React Frontend
-       │
-       ▼
+      │
+      ▼
 FastAPI Backend
-       │
- ┌─────┼─────────────┐
- ▼     ▼             ▼
-Aiven  ML Models     Gemini
-MySQL  (.joblib)     API
+      │
+ ┌────┼──────────────┐
+ ▼    ▼              ▼
+Aiven ML Models      Gemini
+MySQL (.joblib)      API
 ```
 
 ---
@@ -140,7 +150,7 @@ The main dashboard provides a high-level business view including:
 * Review distribution
 * Business attention areas
 
-The purpose is to provide an executive-friendly starting point before moving into deeper analysis.
+The goal is to provide an executive-friendly starting point before moving into deeper analysis.
 
 ---
 
@@ -164,7 +174,7 @@ The platform follows the journey:
 
 The Customer 360 view combines multiple analytical layers for an individual customer.
 
-For a `customer_unique_id`, the platform can provide:
+Given a `customer_unique_id`, the platform can provide:
 
 * Customer profile
 * Order history
@@ -177,7 +187,7 @@ For a `customer_unique_id`, the platform can provide:
 * Product recommendations
 * Generated customer insights
 
-This creates a single customer-level analytical view rather than requiring users to inspect multiple datasets separately.
+This creates a unified customer-level analytical view instead of requiring users to inspect multiple datasets separately.
 
 ---
 
@@ -194,10 +204,10 @@ It includes:
 * Revenue by product category
 * Review performance
 
-Example findings from the dataset include:
+Example findings include:
 
-* Alagoas has the highest late-delivery rate among the analyzed states.
-* `diapers_and_hygiene` has the lowest average review score among the displayed categories.
+* **Alagoas** has the highest late-delivery rate among the analyzed states.
+* **Diapers and Hygiene** has the lowest average review score among the displayed categories.
 
 ---
 
@@ -205,11 +215,11 @@ Example findings from the dataset include:
 
 The platform contains four ML components.
 
-| Model                 | Approach                     | Result               |
-| --------------------- | ---------------------------- | -------------------- |
-| Customer Segmentation | KMeans + RFM                 | Silhouette ≈ 0.369  |
-| Order Value / CLV     | Random Forest Regression     | R² ≈ 0.229         |
-| Retention             | Random Forest Classification | ROC-AUC ≈ 0.618     |
+| Model                 | Approach                     |               Result |
+| --------------------- | ---------------------------- | -------------------: |
+| Customer Segmentation | KMeans + RFM                 |  Silhouette ≈ 0.369 |
+| Order Value / CLV     | Random Forest Regression     |         R² ≈ 0.229 |
+| Retention             | Random Forest Classification |     ROC-AUC ≈ 0.618 |
 | Recommendations       | Item Co-occurrence           | ~4,058 product pairs |
 
 ## Customer Segmentation
@@ -222,18 +232,29 @@ Customers are grouped using RFM-style features:
 
 The resulting business-oriented segments include:
 
-* High-Value
-* Standard
-* At-Risk / Dormant
-* Loyal / Repeat
+* **High-Value**
+* **Standard**
+* **At-Risk / Dormant**
+* **Loyal / Repeat**
 
 The segmentation model is persisted and loaded by the FastAPI backend rather than retrained for every request.
 
+### Segment profile
+
+| Segment           | Customers | Total Monetary Value |
+| ----------------- | --------: | -------------------: |
+| High-Value        |    27,855 |       R$8,864,265.16 |
+| Standard          |    35,695 |       R$2,464,917.98 |
+| At-Risk / Dormant |    27,007 |       R$3,226,403.15 |
+| Loyal / Repeat    |     2,801 |         R$864,187.46 |
+
+---
+
 ## Order Value / CLV
 
-The regression model estimates order value using available customer/order features.
+The regression model estimates order value using available customer and order features.
 
-The model achieves approximately:
+Performance:
 
 * **R²:** 0.229
 * **MAE:** R$92.43
@@ -241,7 +262,9 @@ The model achieves approximately:
 
 This is intentionally reported as a **modest predictive model**, not presented as a highly accurate CLV system.
 
-The dataset contains only a small repeat-purchase signal, which limits the ability to build a strong traditional lifetime-value model.
+The dataset contains limited repeat-purchase behavior, which restricts the ability to build a strong traditional lifetime-value model.
+
+---
 
 ## Retention Prediction
 
@@ -251,11 +274,15 @@ Because repeat purchasing is relatively rare in this dataset, the model uses cla
 
 **ROC-AUC ≈ 0.618**
 
+---
+
 ## Product Recommendations
 
 The recommendation system uses product co-occurrence from customer orders.
 
 It identifies products that frequently appear together and uses these relationships to generate recommendation candidates.
+
+The current model contains approximately **4,058 product-pair relationships**.
 
 ---
 
@@ -265,7 +292,7 @@ The platform integrates **Google Gemini** for AI-assisted business analysis.
 
 The GenAI layer includes:
 
-### Business Analyst Assistant
+## Business Analyst Assistant
 
 Users can ask questions about:
 
@@ -278,17 +305,34 @@ Users can ask questions about:
 
 The assistant is designed to ground responses in available platform metrics.
 
-### Automated Insight Generation
+Example:
+
+```text
+What are our total revenue, average order value,
+late delivery rate, and average review score?
+```
+
+The deployed assistant can return the corresponding business metrics and provide contextual recommendations.
+
+---
+
+## Automated Insight Generation
 
 The system can transform analytical results into concise business observations and recommendations.
 
-### Report Generation
+This connects quantitative analysis with business-oriented interpretation.
+
+---
+
+## Report Generation
 
 Analytics can be transformed into structured business-oriented reporting.
 
-### Natural Language → SQL
+---
 
-Users can ask questions in natural language.
+## Natural Language → SQL
+
+Users can ask analytical questions in natural language.
 
 Example:
 
@@ -296,7 +340,7 @@ Example:
 Which states have the highest late-delivery rates?
 ```
 
-The system can translate the request into SQL, execute it, and return an explanation.
+The system can translate the request into SQL, execute the query, and return an explanation.
 
 The NL→SQL layer includes a **SELECT-only safety guard** that rejects destructive SQL operations such as:
 
@@ -311,9 +355,11 @@ CREATE
 GRANT
 ```
 
-### Chart Insight Generator
+---
 
-The GenAI layer can generate observations from analytical chart data.
+## Chart Insight Generator
+
+The GenAI layer can generate observations from analytical chart data, helping convert visual analytics into concise business insights.
 
 ---
 
@@ -332,6 +378,7 @@ Important API groups include:
 | `/api/ml/predict-order-value`  | Order-value prediction             |
 | `/api/ml/recommendations/{id}` | Product recommendations            |
 | `/api/analytics/overview`      | Executive metrics                  |
+| `/api/analytics/overview-full` | Combined dashboard analytics       |
 | `/api/analytics/revenue-trend` | Revenue trend                      |
 | `/api/analytics/customers`     | Customer analytics                 |
 | `/api/analytics/products`      | Product analytics                  |
@@ -341,11 +388,15 @@ Important API groups include:
 | `/api/genai/nl-to-sql`         | Natural language → SQL            |
 | `/api/data-quality`            | Data quality checks                |
 
-Interactive API documentation is available through FastAPI Swagger UI at:
+### API documentation
+
+FastAPI Swagger UI is available **locally during development**:
 
 ```text
-/api/docs
+http://localhost:8000/docs
 ```
+
+Production Swagger, ReDoc, and OpenAPI documentation are disabled for security.
 
 ---
 
@@ -355,19 +406,19 @@ The application uses **MySQL** as the production relational database.
 
 The production schema contains nine core tables:
 
-* customers
-* orders
-* order_items
-* order_payments
-* order_reviews
-* products
-* sellers
-* geolocation
-* product_category_translation
+* `customers`
+* `orders`
+* `order_items`
+* `order_payments`
+* `order_reviews`
+* `products`
+* `sellers`
+* `geolocation`
+* `product_category_translation`
 
 The production database is hosted using **Aiven MySQL**.
 
-The database design includes primary keys, composite keys, foreign keys, and separate staging/raw structures.
+The database design includes primary keys, composite keys, indexes, foreign-key relationships, and separate staging/raw structures.
 
 ---
 
@@ -448,29 +499,25 @@ The application communicates with the FastAPI backend through HTTP APIs.
 
 The application is deployed as separate cloud services.
 
-### Frontend
+## Frontend
 
 **Render Static Site**
 
-```text
 https://customer-intelligence-platform-7v7w.onrender.com
-```
 
-### Backend
+## Backend
 
 **Render Web Service**
 
-```text
 https://customer-intelligence-analytics-platform.onrender.com
-```
 
-### Database
+## Database
 
 **Aiven MySQL**
 
 The production database is connected to the FastAPI backend through environment variables and SSL-enabled MySQL connectivity.
 
-### AI
+## AI
 
 **Google Gemini API**
 
@@ -556,13 +603,17 @@ cp .env.example .env
 
 Configure the required database and Gemini settings.
 
-> Never commit `.env` or real API keys/passwords to Git.
+> Never commit `.env`, database passwords, or real API keys to Git.
+
+---
 
 ## 3. Install backend dependencies
 
 ```bash
 pip install -r backend/requirements.txt
 ```
+
+---
 
 ## 4. Start FastAPI
 
@@ -582,6 +633,8 @@ Swagger:
 ```text
 http://localhost:8000/docs
 ```
+
+---
 
 ## 5. Start React
 
@@ -626,11 +679,20 @@ The test suite covers:
 * NL→SQL safety
 * NL→SQL execution path
 
+In addition to automated testing, the deployed application was manually verified across:
+
+* Overview
+* Customers
+* Customer 360
+* Operations
+* AI Assistant
+* System Health
+
 ---
 
 # Security
 
-The project follows several basic production security practices:
+The project follows several production-oriented security practices:
 
 * Secrets stored in environment variables
 * `.env` excluded from Git
@@ -638,8 +700,24 @@ The project follows several basic production security practices:
 * MySQL credentials kept outside source code
 * NL→SQL restricted to read-only SQL
 * Production database not directly exposed through the frontend
-* CORS configured for the deployed frontend
+* CORS restricted to the deployed frontend
 * ML artifacts loaded server-side
+* Production API documentation disabled
+* Database connectivity protected through SSL
+
+---
+
+# Performance
+
+The platform uses several optimizations to reduce unnecessary database work:
+
+* SQL-based aggregation instead of loading large datasets into Pandas for API requests
+* Short-lived analytics caching
+* Combined overview analytics endpoint
+* Parallel execution of independent overview queries using separate MySQL connections
+* Persisted ML models loaded at application startup
+
+The application is deployed on free-tier infrastructure, so cold starts and remote database latency can still affect response times.
 
 ---
 
@@ -647,21 +725,33 @@ The project follows several basic production security practices:
 
 This project is intentionally transparent about its limitations.
 
-### Limited repeat-purchase signal
+## Limited repeat-purchase signal
 
 The Olist dataset contains relatively few repeat customers, which limits the strength of retention and traditional CLV modeling.
 
-### CLV / Order-value prediction
+## CLV / Order-value prediction
 
-The regression model has an R² of approximately 0.229. It provides useful experimental signal but should not be treated as a highly accurate financial forecasting model.
+The regression model has an R² of approximately **0.229**.
 
-### ML version compatibility
+It provides experimental predictive signal but should not be treated as a highly accurate financial forecasting model.
 
-The persisted models were trained using scikit-learn 1.8.0 and the production dependency is pinned accordingly. Deployment environments should maintain compatible versions when loading the serialized artifacts.
+## Retention prediction
 
-### Free-tier infrastructure
+The retention model achieves approximately **0.618 ROC-AUC**.
 
-The deployed application uses free-tier cloud services. Availability, performance, sleep behavior, quotas, and limits may vary by provider and can change over time.
+The relatively low repeat-purchase signal in the source dataset limits the predictive ceiling.
+
+## ML version compatibility
+
+The persisted models were trained using **scikit-learn 1.8.0** and the production dependency is pinned accordingly.
+
+Deployment environments should maintain compatible versions when loading the serialized artifacts.
+
+## Free-tier infrastructure
+
+The deployed application uses free-tier cloud services.
+
+Availability, performance, sleep behavior, quotas, and limits may vary by provider and can change over time.
 
 ---
 
@@ -674,7 +764,6 @@ Potential next steps include:
 * Stronger customer retention modeling
 * Probabilistic CLV models such as BG/NBD + Gamma-Gamma
 * More advanced recommendation algorithms
-* Query caching
 * Automated CI/CD testing
 * Model monitoring
 * Feature monitoring
@@ -705,64 +794,42 @@ Potential next steps include:
 
 # What This Project Demonstrates
 
-This project demonstrates practical experience across the complete data-product lifecycle:
+This project demonstrates practical experience across the complete data-product lifecycle.
 
-**Data Engineering**
+### Data Engineering
 
-→ Data cleaning
-→ ETL
-→ Relational database design
-→ Data validation
+**Data cleaning → ETL → Relational database design → Data validation**
 
-**Data Analytics**
+### Data Analytics
 
-→ SQL analytics
-→ EDA
-→ Business KPIs
-→ Customer analytics
-→ Operations analytics
+**SQL analytics → EDA → Business KPIs → Customer analytics → Operations analytics**
 
-**Machine Learning**
+### Machine Learning
 
-→ Customer segmentation
-→ Classification
-→ Regression
-→ Recommendation systems
+**Customer segmentation → Classification → Regression → Recommendation systems**
 
-**Generative AI**
+### Generative AI
 
-→ Business Q&A
-→ Natural-language SQL
-→ Automated insights
-→ Report generation
-→ Chart interpretation
+**Business Q&A → Natural-language SQL → Automated insights → Report generation → Chart interpretation**
 
-**Software Engineering**
+### Software Engineering
 
-→ FastAPI APIs
-→ React frontend
-→ API integration
-→ Environment configuration
-→ Security practices
+**FastAPI APIs → React frontend → API integration → Environment configuration → Security practices**
 
-**Deployment**
+### Deployment
 
-→ GitHub
-→ Render
-→ Aiven MySQL
-→ Production environment variables
-→ Live cloud application
+**GitHub → Render → Aiven MySQL → Production environment variables → Live cloud application**
 
 ---
 
-## Author
+# Author
 
 **Krishna B M**
 
-Built as a practical end-to-end data science and software engineering project.
+Built as a practical end-to-end data science, analytics, machine-learning, GenAI, and software engineering project.
 
-**Live Application:**
+🌐 **Live Application:**
 https://customer-intelligence-platform-7v7w.onrender.com
 
-**GitHub Repository:**
+🔗 **GitHub Repository:**
 https://github.com/Krishna-Malwad/Customer-Intelligence-Analytics-Platform
