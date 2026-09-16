@@ -5,10 +5,12 @@ Exposes the existing Gemini-based GenAI scripts as API endpoints.
 Every failure mode returns a clean, structured error.
 """
 
+import base64
 import logging
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from pydantic import BaseModel
 
 from app.core.database import get_db
 from app.schemas.ml import NLQueryRequest, BusinessQuestionRequest
@@ -16,6 +18,17 @@ from app.services import genai_service, analytics_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/genai", tags=["genai"])
+
+# Request models for the new AI Assistant capabilities. app/schemas/ml.py
+# was not provided for this change, so these are defined locally next to
+# the routes that use them, following the same shape as the existing
+# NLQueryRequest/BusinessQuestionRequest (a single required string field).
+class DashboardUrlRequest(BaseModel):
+    url: str
+
+
+ALLOWED_SCREENSHOT_TYPES = {"image/png", "image/jpeg", "image/webp"}
+MAX_SCREENSHOT_BYTES = 6 * 1024 * 1024  # 6 MB
 
 
 def get_segmentation_context() -> str:
@@ -102,9 +115,13 @@ def get_segmentation_context() -> str:
         )
 
 
-@router.post("/ask")
-def ask_business_question(payload: BusinessQuestionRequest, db=Depends(get_db)):
-    conn, cursor = db
+def build_business_context(cursor) -> str:
+    """
+    Assemble the same real, database-backed business-metrics context used
+    by the Business Analyst Assistant. Shared by /ask, /insights, and
+    /report so all three AI capabilities are grounded in identical,
+    verified numbers rather than each building its own copy.
+    """
 
     try:
         overview = analytics_service.get_overview(cursor)
@@ -114,7 +131,7 @@ def ask_business_question(payload: BusinessQuestionRequest, db=Depends(get_db)):
         satisfaction = analytics_service.get_satisfaction_analytics(cursor)
         segmentation_context = get_segmentation_context()
 
-        context_text = f"""
+        return f"""
 REAL DATABASE-BACKED BUSINESS METRICS
 ======================================
 
@@ -175,10 +192,16 @@ Lowest-rated product categories:
 
     except Exception:
         logger.exception("Failed to build GenAI business context")
-        context_text = (
+        return (
             "No verified business metrics are currently available. "
             "Do not invent numerical values."
         )
+
+
+@router.post("/ask")
+def ask_business_question(payload: BusinessQuestionRequest, db=Depends(get_db)):
+    conn, cursor = db
+    context_text = build_business_context(cursor)
 
     try:
         return genai_service.ask_business_question(
@@ -200,3 +223,82 @@ def nl_to_sql(payload: NLQueryRequest, db=Depends(get_db)):
         )
     except genai_service.GenAIError as e:
         raise HTTPException(status_code=422, detail=str(e))
+
+
+@router.post("/insights")
+def automated_insights(db=Depends(get_db)):
+    """
+    Automated Insights capability. Reuses the same analytics + Gemini
+    infrastructure as /ask - no new database or AI client.
+    """
+    conn, cursor = db
+    context_text = build_business_context(cursor)
+
+    try:
+        return genai_service.generate_automated_insights(context_text)
+    except genai_service.GenAIError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+
+@router.post("/report")
+def business_report(db=Depends(get_db)):
+    """
+    Report Generation capability. Reuses the same analytics + Gemini
+    infrastructure as /ask - no new database or AI client.
+    """
+    conn, cursor = db
+    context_text = build_business_context(cursor)
+
+    try:
+        return genai_service.generate_business_report(context_text)
+    except genai_service.GenAIError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+
+@router.post("/chart-insight/url")
+def chart_insight_url(payload: DashboardUrlRequest):
+    """
+    Dashboard Analyst / Chart Insight Generator - Mode A (public URL).
+    """
+    url = (payload.url or "").strip()
+
+    if not url:
+        raise HTTPException(status_code=422, detail="A dashboard URL is required.")
+
+    try:
+        return genai_service.analyze_dashboard_url(url)
+    except genai_service.GenAIError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+
+@router.post("/chart-insight/screenshot")
+async def chart_insight_screenshot(file: UploadFile = File(...)):
+    """
+    Dashboard Analyst / Chart Insight Generator - Mode B (screenshot
+    upload). Uses the existing ask_claude_vision function from the shared
+    Gemini client - no new AI client, and the image is never persisted to
+    disk.
+    """
+    if file.content_type not in ALLOWED_SCREENSHOT_TYPES:
+        raise HTTPException(
+            status_code=422,
+            detail="Unsupported file type. Please upload a PNG, JPEG, or WebP image.",
+        )
+
+    contents = await file.read()
+
+    if not contents:
+        raise HTTPException(status_code=422, detail="Uploaded file is empty.")
+
+    if len(contents) > MAX_SCREENSHOT_BYTES:
+        raise HTTPException(
+            status_code=422,
+            detail="Screenshot is too large. Please upload an image under 6 MB.",
+        )
+
+    image_base64 = base64.b64encode(contents).decode("utf-8")
+
+    try:
+        return genai_service.analyze_dashboard_image(image_base64, file.content_type)
+    except genai_service.GenAIError as e:
+        raise HTTPException(status_code=502, detail=str(e))
