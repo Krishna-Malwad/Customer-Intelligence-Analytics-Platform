@@ -69,7 +69,12 @@ def ask_claude(system_prompt: str, user_prompt: str, model: str = DEFAULT_MODEL,
     that import it — internally this now calls Gemini.
     """
     api_key = _get_api_key()
-    url = f"{GEMINI_BASE_URL}/{model}:generateContent?key={api_key}"
+    url = f"{GEMINI_BASE_URL}/{model}:generateContent"
+
+    headers = {
+        "x-goog-api-key": api_key,
+        "Content-Type": "application/json",
+    }
 
     payload = {
         "system_instruction": {"parts": [{"text": system_prompt}]},
@@ -80,7 +85,12 @@ def ask_claude(system_prompt: str, user_prompt: str, model: str = DEFAULT_MODEL,
         },
     }
 
-    response = requests.post(url, json=payload, timeout=60)
+    response = requests.post(
+    url,
+    headers=headers,
+    json=payload,
+    timeout=60,
+    )
     response.raise_for_status()
     return _extract_text(response.json())
 
@@ -116,7 +126,12 @@ def ask_claude_vision(system_prompt: str, user_prompt: str, image_base64: str,
                        max_tokens: int = 1200) -> str:
     """Vision completion for chart_insight_generator.py — describe/analyze an uploaded image."""
     api_key = _get_api_key()
-    url = f"{GEMINI_BASE_URL}/{model}:generateContent?key={api_key}"
+    url = f"{GEMINI_BASE_URL}/{model}:generateContent"
+
+    headers = {
+        "x-goog-api-key": api_key,
+        "Content-Type": "application/json",
+    }
 
     payload = {
         "system_instruction": {"parts": [{"text": system_prompt}]},
@@ -133,6 +148,11 @@ def ask_claude_vision(system_prompt: str, user_prompt: str, image_base64: str,
         },
     }
 
-    response = requests.post(url, json=payload, timeout=60)
+    response = requests.post(
+    url,
+    headers=headers,
+    json=payload,
+    timeout=60,
+    )
     response.raise_for_status()
     return _extract_text(response.json())
