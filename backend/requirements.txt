@@ -8,3 +8,4 @@ scikit-learn==1.8.0
 joblib==1.5.2
 requests>=2.31
 pydantic>=2.0
+python-multipart
